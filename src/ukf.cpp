@@ -23,8 +23,12 @@ UKF::UKF(std::string name) {
   x_.fill(0.0);
 
   // initial covariance matrix
-  P_ = MatrixXd(5, 5);
-  P_.fill(0.0);
+  P_ = MatrixXd(n_x_, n_x_);
+  P_ << 4, 0, 0, 0, 0,
+        0, 4, 0, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 0, 0, 1, 0,
+        0, 0, 0, 0, 1;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 30;
@@ -126,6 +130,14 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   if (!is_initialized_) {
     *out_file_ << "* Initializing the UKF with measurement at t =  " << meas_package.timestamp_ << "\n";
     // Set is_initialized_ to true after initializing.
+
+    // Initialize with the respective formulas depending on the sensor type.
+    // Only initialize the position.
+    // Even though Radar gives the velocity,
+    // it is the radial relative velocity, but not the speed which is contained in the state.
+    // It could even be the case that a car is moving tangentially with a high speed,
+    // and Radar measures a range rate of (approximately) 0.
+
     is_initialized_ = true;
     return;
   } else {
