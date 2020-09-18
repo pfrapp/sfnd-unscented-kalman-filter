@@ -108,11 +108,13 @@ void Highway::stepHighway(double egoVelocity, long long timestamp, int frame_per
             tools.radarSense(traffic[i], egoCar, viewer, timestamp, visualize_radar);
             tools.ukfResults(traffic[i],viewer, projectedTime, projectedSteps);
             VectorXd estimate(4);
-            double v  = traffic[i].ukf.x_(2);
-            double yaw = traffic[i].ukf.x_(3);
+            double v  = traffic[i].ukf.getSpeed();
+            double yaw = traffic[i].ukf.getYaw();
             double v1 = cos(yaw)*v;
             double v2 = sin(yaw)*v;
-            estimate << traffic[i].ukf.x_[0], traffic[i].ukf.x_[1], v1, v2;
+            double px = traffic[i].ukf.getXPosition();
+            double py = traffic[i].ukf.getYPosition();
+            estimate << px, py, v1, v2;
             tools.estimations.push_back(estimate);
 
         }

@@ -41,6 +41,25 @@ class UKF {
    */
   void UpdateRadar(MeasurementPackage meas_package);
 
+  //! Get the x-position estimate (in m)
+  double getXPosition() const { return x_(0); }
+  
+  //! Get the y-position estimate (in m)
+  double getYPosition() const { return x_(1); }
+
+  //! Get the speed (velocity magnitude) estimate (in m/s)
+  double getSpeed() const { return x_(2); }
+
+  //! Get the yaw angle estimate (in rad)
+  double getYaw() const { return x_(3); }
+
+  //! Get the yaw rate estimate (in rad/s)
+  double getYawRate() const { return x_(4); }
+
+  //! Get a constant reference to the estimated state.
+  const Eigen::VectorXd& getState() const { return x_; };
+
+private:
 
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
