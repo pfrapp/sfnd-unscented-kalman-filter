@@ -80,6 +80,12 @@ private:
    */
   void predictStateSigmaPoints(double delta_t);
 
+  /**
+   * \brief Compute mean state x and state error covariance P based on the predicted state sigma points.
+   * \details This has been dealt with in Lesson 04, Concept 23.
+   */
+  void computeMeanStateAndCovarianceFromPredictedStateSigmaPoints();
+
   //! Utility function for normalizing an angle so that it is within [-pi, +pi]
   double normalizeAngle(double angle) const;
 

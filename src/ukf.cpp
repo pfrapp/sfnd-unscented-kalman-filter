@@ -225,6 +225,29 @@ void UKF::predictStateSigmaPoints(double delta_t) {
 
 }
 
+void UKF::computeMeanStateAndCovarianceFromPredictedStateSigmaPoints() {
+  //
+  // See Lesson 04, Concept 23.
+  //
+
+  // Predicted state mean
+  x_.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; ++i) {  // iterate over sigma points
+    x_ = x_ + weights_(i) * Xsig_pred_.col(i);
+  }
+
+  // Predicted state covariance matrix
+  P_.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; ++i) {  // iterate over sigma points
+    // state difference
+    VectorXd x_diff = Xsig_pred_.col(i) - x_;
+    // angle normalization
+    x_diff(3) = normalizeAngle(x_diff(3));
+
+    P_ = P_ + weights_(i) * x_diff * x_diff.transpose();
+  }
+}
+
 double UKF::normalizeAngle(double angle) const {
   constexpr double two_pi = 2.0 * M_PI;
   while (angle > M_PI) {
