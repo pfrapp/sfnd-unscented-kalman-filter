@@ -1,6 +1,10 @@
 #ifndef UKF_H
 #define UKF_H
 
+#include <fstream>
+#include <string>
+#include <memory>
+
 #include "Eigen/Dense"
 #include "measurement_package.h"
 
@@ -9,7 +13,7 @@ class UKF {
   /**
    * Constructor
    */
-  UKF();
+  UKF(std::string name);
 
   /**
    * Destructor
@@ -151,6 +155,14 @@ private:
 
   // Measurement dimension for Radar
   int n_z_radar_;
+
+  //------- Debug members ----------------
+
+  //! Name of this filter (for debugging)
+  std::string name_;
+
+  //! Debug output file stream
+  std::shared_ptr<std::ofstream> out_file_{nullptr};
 };
 
 #endif  // UKF_H

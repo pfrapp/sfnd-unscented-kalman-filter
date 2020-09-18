@@ -1,3 +1,7 @@
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+
 #include "ukf.h"
 #include "Eigen/Dense"
 
@@ -7,7 +11,7 @@ using Eigen::VectorXd;
 /**
  * Initializes Unscented Kalman filter
  */
-UKF::UKF() {
+UKF::UKF(std::string name) {
   // if this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
@@ -86,6 +90,16 @@ UKF::UKF() {
   weights_ = VectorXd(2*n_aug_+1);
   computeWeights();
 
+  //-------------- Debug stuff ------------
+  name_ = name;
+
+  // See http://www.cplusplus.com/reference/iomanip/setfill/
+  std::stringstream ss;
+  // ss << "/tmp/ukf_debug_" << std::setfill('0') << std::setw(2) << id << ".txt";
+  ss << "/tmp/ukf_debug_" << name_ << ".txt";
+  out_file_ = std::make_shared<std::ofstream>(ss.str(), std::ios::out);
+  *out_file_ << "*** UKF for " << name_ << " ***\n";
+
 }
 
 UKF::~UKF() {}
@@ -95,6 +109,15 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
    * TODO: Complete this function! Make sure you switch between lidar and radar
    * measurements.
    */
+
+  switch(meas_package.sensor_type_) {
+    case MeasurementPackage::LASER:
+      *out_file_ << "* LASER at t = " << meas_package.timestamp_ << "\n";
+      break;
+    case MeasurementPackage::RADAR:
+      *out_file_ << "* RADAR at t = " << meas_package.timestamp_ << "\n";
+      break;
+  }
 }
 
 void UKF::Prediction(double delta_t) {
@@ -103,6 +126,10 @@ void UKF::Prediction(double delta_t) {
    * Modify the state vector, x_. Predict sigma points, the state, 
    * and the state covariance matrix.
    */
+
+  *out_file_ << "* Predicting for dt = " << delta_t << "\n";
+
+
 }
 
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
