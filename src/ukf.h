@@ -80,6 +80,9 @@ private:
    */
   void predictStateSigmaPoints(double delta_t);
 
+  //! Utility function for normalizing an angle so that it is within [-pi, +pi]
+  double normalizeAngle(double angle) const;
+
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 

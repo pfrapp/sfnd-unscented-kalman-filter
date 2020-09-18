@@ -225,3 +225,14 @@ void UKF::predictStateSigmaPoints(double delta_t) {
 
 }
 
+double UKF::normalizeAngle(double angle) const {
+  constexpr double two_pi = 2.0 * M_PI;
+  while (angle > M_PI) {
+    angle -= two_pi;
+  }
+  while (angle < -M_PI) {
+    angle += two_pi;
+  }
+
+  return angle;
+}
