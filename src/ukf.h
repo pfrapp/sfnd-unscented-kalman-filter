@@ -74,6 +74,12 @@ private:
    */
   void initializeAugmentedStateSigmaPoints();
 
+  /**
+   * \brief Predict the sigma points using the plant model (state transition model).
+   * \details This has been dealt with in Lesson 04, Concept 20.
+   */
+  void predictStateSigmaPoints(double delta_t);
+
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 

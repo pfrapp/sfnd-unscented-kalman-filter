@@ -174,3 +174,54 @@ void UKF::initializeAugmentedStateSigmaPoints() {
   }
 
 }
+
+void UKF::predictStateSigmaPoints(double delta_t) {
+  //
+  // See Lesson 04, Concept 20.
+  //
+
+  double delta_t2 = 0.5*delta_t*delta_t;  // 1/2 * delta_t squared
+
+  for (int cc=0; cc<Xsig_aug_.cols(); cc++) {
+    // predict sigma points
+    VectorXd x_aug = Xsig_aug_.col(cc);
+    double px = x_aug(0);
+    double py = x_aug(1);
+    double v = x_aug(2);
+    double psi = x_aug(3);
+    double psi_dot = x_aug(4);
+    double nu_a = x_aug(5);
+    double nu_psi_dd = x_aug(6);
+
+    VectorXd x_pred = x_aug.head(n_x_);
+
+    // avoid division by zero
+    if (std::abs(psi_dot) < 1.0e-6) {
+      // Straight driving
+
+      // Deterministic part for px and py
+      x_pred(0) += v*std::cos(psi) * delta_t;
+      x_pred(1) += v*std::sin(psi) * delta_t;
+    } else {
+      // Deterministic part for px and py
+      x_pred(0) += v/psi_dot*(std::sin(psi + psi_dot*delta_t) - std::sin(psi));
+      x_pred(1) += v/psi_dot*(-std::cos(psi + psi_dot*delta_t) + std::cos(psi));
+    }
+    // Deterministic part for v, psi, and psi_dot
+    x_pred(2) += 0;
+    x_pred(3) += psi_dot * delta_t;
+    x_pred(4) += 0;
+
+    // Add the stochastic part, which is the same for both plant models (psi_dot == 0 and psi_dot != 0)
+    x_pred(0) += delta_t2 * std::cos(psi) * nu_a;
+    x_pred(1) += delta_t2 * std::sin(psi) * nu_a;
+    x_pred(2) += delta_t * nu_a;
+    x_pred(3) += delta_t2 * nu_psi_dd;
+    x_pred(4) += delta_t * nu_psi_dd;
+
+    // write predicted sigma points into respective column
+    Xsig_pred_.col(cc) = x_pred;
+  }
+
+}
+
