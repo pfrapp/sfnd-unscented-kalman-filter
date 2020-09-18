@@ -118,6 +118,49 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       *out_file_ << "* RADAR at t = " << meas_package.timestamp_ << "\n";
       break;
   }
+
+  // Check if the UKF has already been initialized.
+  // If so, predict to the current measurement time and
+  // then update by means of the measurement.
+  // If not, initialize the UKF.
+  if (!is_initialized_) {
+    *out_file_ << "* Initializing the UKF with measurement at t =  " << meas_package.timestamp_ << "\n";
+    // Set is_initialized_ to true after initializing.
+    is_initialized_ = true;
+    return;
+  } else {
+    double delta_t = meas_package.timestamp_ - time_us_;
+    delta_t *= 1.0e-6;  // Convert from us to seconds
+    //
+    // Predict even when delta_t == 0.
+    // Reason: This ensures that the 'predicted' sigma points are distributed
+    // correctly about the most recent mean state x and covariance P.
+    // In other words: The correction (measurement update) step only updates
+    // x and P, but not the corresponding (predicted) sigma points, which are
+    // however needed for the computation of the cross-correlation matrix T.
+    // That means that when two measurements arrive at the same time, we have
+    // to either
+    //   - predict for 0 seconds (as done here), or
+    //   - recompute the (non-augmented) state sigma points (Xsig_pred_)
+    //     based on the updated (corrected) x and P
+    //     (not done here for the sake of a clear control flow)
+    //
+    // The prediction for 0 seconds is numerically perfectly fine.
+    // It does not even introduce additional (process) noise/uncertainty,
+    // but is rather just used to get the correct sigma points without introducing
+    // an if-else-branch
+    //
+    Prediction(delta_t);
+    time_us_ = meas_package.timestamp_;
+    switch(meas_package.sensor_type_) {
+        case MeasurementPackage::LASER:
+          *out_file_ << "* Updating LASER\n";
+          break;
+        case MeasurementPackage::RADAR:
+          *out_file_ << "* Updating RADAR\n";
+          break;
+      }
+  }
 }
 
 void UKF::Prediction(double delta_t) {
@@ -127,9 +170,12 @@ void UKF::Prediction(double delta_t) {
    * and the state covariance matrix.
    */
 
-  *out_file_ << "* Predicting for dt = " << delta_t << "\n";
+  *out_file_ << "* Predicting for dt = " << delta_t << " seconds (" << delta_t*1.0e6 << " us)\n";
 
-
+  if (!is_initialized_) {
+    std::cerr << "Error: UKF is not yet initialized!\n";
+    return;
+  }
 }
 
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
