@@ -61,6 +61,9 @@ class UKF {
 
 private:
 
+  //! Compute the weights
+  void computeWeights();
+
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
@@ -114,6 +117,12 @@ private:
 
   // Sigma point spreading parameter
   double lambda_;
+
+  // Measurement dimension for Lidar
+  int n_z_lidar_;
+
+  // Measurement dimension for Radar
+  int n_z_radar_;
 };
 
 #endif  // UKF_H
