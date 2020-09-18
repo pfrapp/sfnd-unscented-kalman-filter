@@ -61,7 +61,10 @@ class UKF {
 
 private:
 
-  //! Compute the weights
+  /**
+   * \brief Compute the weights.
+   * \details This has been dealt with in Lesson 04, Concept 23.
+   */
   void computeWeights();
 
   /**

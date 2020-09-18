@@ -123,6 +123,10 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 }
 
 void UKF::computeWeights() {
+  //
+  // See Lesson 04, Concept 23.
+  //
+
   double weight_0 = lambda_ / (lambda_ + n_aug_);
   double other_weights = 0.5 / (lambda_ + n_aug_);
   weights_(0) = weight_0;
