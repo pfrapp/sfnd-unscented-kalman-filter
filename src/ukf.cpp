@@ -82,7 +82,8 @@ UKF::UKF() {
   Xsig_aug_ = Eigen::MatrixXd(n_aug_, 2*n_aug_ + 1);
   Xsig_aug_.fill(0.0);
 
-  // Compute the weights
+  // Allocate and compute the weights
+  weights_ = VectorXd(2*n_aug_+1);
   computeWeights();
 
 }
@@ -126,6 +127,13 @@ void UKF::computeWeights() {
   //
   // See Lesson 04, Concept 23.
   //
+
+  // Check dimensions
+  if (weights_.size() != 2*n_aug_ + 1) {
+    std::cerr << "Error: weights_ has invalid dimensions, will not compute the weights.\n";
+    std::cerr << "Actual weight size number is " << weights_.size() << ", expected " << (2*n_aug_+1) << "\n";
+    return;
+  }
 
   double weight_0 = lambda_ / (lambda_ + n_aug_);
   double other_weights = 0.5 / (lambda_ + n_aug_);
