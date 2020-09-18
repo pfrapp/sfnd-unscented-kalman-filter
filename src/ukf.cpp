@@ -79,6 +79,9 @@ UKF::UKF() {
   Xsig_pred_ = Eigen::MatrixXd(n_x_, 2*n_aug_ + 1);
   Xsig_pred_.fill(0.0);
 
+  Xsig_aug_ = Eigen::MatrixXd(n_aug_, 2*n_aug_ + 1);
+  Xsig_aug_.fill(0.0);
+
   // Compute the weights
   computeWeights();
 
@@ -126,4 +129,44 @@ void UKF::computeWeights() {
   for (int ii=1; ii<2*n_aug_+1; ii++) {
     weights_(ii) = other_weights;
   }
+}
+
+void UKF::initializeAugmentedStateSigmaPoints() {
+  //
+  // See Lesson 04, Concept 17.
+  //
+
+  // Create process noise matrix Q.
+  MatrixXd Q = MatrixXd(2, 2);
+  Q << (std_a_*std_a_), 0,
+       0, (std_yawdd_, std_yawdd_);
+
+  // Create augmented covariance matrix P_aug.
+  MatrixXd P_aug = MatrixXd(n_aug_, n_aug_);
+  P_aug.fill(0.0);
+  P_aug.topLeftCorner(n_x_, n_x_) = P_;
+  P_aug.bottomRightCorner(n_aug_ - n_x_, n_aug_ - n_x_) = Q;
+
+  // Create lower triangluar
+  // square root matrix A_aug (such that P_aug = A_aug * A_aug^T)
+  // by means of Cholesky decomposition.
+  MatrixXd A_aug = P_aug.llt().matrixL();
+  A_aug = A_aug * std::sqrt(lambda_ + n_aug_);
+
+  // Create augmented mean state.
+  VectorXd x_aug = VectorXd(n_aug_);
+  x_aug.head(5) = x_;
+  x_aug(5) = 0.0;   // process noise mean is 0
+  x_aug(6) = 0.0;   // process noise mean is 0
+
+  // Create augmented sigma points for the state.
+  Xsig_aug_.fill(0.0);
+  for (int cc=0; cc<n_aug_; cc++) {
+      Xsig_aug_.col(cc+1) = A_aug.col(cc);
+      Xsig_aug_.col(cc+1+n_aug_) = A_aug.col(cc) * (-1.0);
+  }
+  for (int cc=0; cc<2*n_aug_ + 1; cc++) {
+      Xsig_aug_.col(cc) += x_aug;
+  }
+
 }

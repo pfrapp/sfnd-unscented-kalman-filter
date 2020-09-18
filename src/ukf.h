@@ -64,6 +64,13 @@ private:
   //! Compute the weights
   void computeWeights();
 
+  /**
+   * \brief Compute the augmented sigma points X based on the mean state x and the state error covariance P.
+   * \details The resulting sigma points are stored in Xsig_aug_.
+   *          This has been dealt with in Lesson 04, Concept 17.
+   */
+  void initializeAugmentedStateSigmaPoints();
+
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
@@ -81,6 +88,9 @@ private:
 
   // predicted sigma points matrix
   Eigen::MatrixXd Xsig_pred_;
+
+  // Augmented sigma points matrix
+  Eigen::MatrixXd Xsig_aug_;
 
   // time when the state is true, in us
   long long time_us_;
