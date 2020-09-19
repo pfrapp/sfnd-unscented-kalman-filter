@@ -188,6 +188,18 @@ void UKF::Prediction(double delta_t) {
     std::cerr << "Error: UKF is not yet initialized!\n";
     return;
   }
+
+  // First of all, initialize the (augmented) sigma points (calligraphic X)
+  // based on the current mean state x and its covariance P.
+  initializeAugmentedStateSigmaPoints();
+
+  // Predict the (augmented) sigma points by means of the plant model
+  // (or state transition model) in order to get the predicted sigma points.
+  predictStateSigmaPoints(delta_t);
+
+  // Based on the predicted sigma points, compute the new mean
+  // state x and its covariance P.
+  computeMeanStateAndCovarianceFromPredictedStateSigmaPoints();
 }
 
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
