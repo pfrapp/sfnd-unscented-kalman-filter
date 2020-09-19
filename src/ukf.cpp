@@ -185,6 +185,7 @@ void UKF::Prediction(double delta_t) {
   *out_file_ << "* Predicting for dt = " << delta_t << " seconds (" << delta_t*1.0e6 << " us)\n";
 
   if (!is_initialized_) {
+    *out_file_ << "Error: Cannot predict because the UKF is not yet initialized.\n";
     std::cerr << "Error: UKF is not yet initialized!\n";
     return;
   }
