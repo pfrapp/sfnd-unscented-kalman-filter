@@ -283,6 +283,10 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   x_(3) = normalizeAngle(x_(3));
   MatrixXd I = MatrixXd::Identity(n_x_, n_x_);
   P_ = (I - K * H_lidar_) * P_;
+
+  // Compute and export the NIS (normalized innovation squared) value.
+  double nis = y.transpose() * Si * y;
+  *out_file_ << "* LIDAR-NIS: " << nis << "\n";
 }
 
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
@@ -395,6 +399,10 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   x_ += K*z_diff;
   x_(3) = normalizeAngle(x_(3));
   P_ -= K*S*Kt;
+
+  // Compute and export the NIS (normalized innovation squared) value.
+  double nis = z_diff.transpose() * S.inverse() * z_diff;
+  *out_file_ << "* RADAR-NIS: " << nis << "\n";
 
 }
 
