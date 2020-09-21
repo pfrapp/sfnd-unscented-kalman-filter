@@ -94,6 +94,13 @@ UKF::UKF(std::string name) {
   weights_ = VectorXd(2*n_aug_+1);
   computeWeights();
 
+  // Initialize the measurement noise matrices.
+  R_lidar_ << (std_laspx_*std_laspx_), 0,
+              0, (std_laspy_*std_laspy_);
+  R_radar_ << (std_radr_*std_radr_), 0, 0,
+              0, (std_radphi_*std_radphi_), 0,
+              0, 0, (std_radrd_*std_radrd_);
+
   //-------------- Debug stuff ------------
   name_ = name;
 

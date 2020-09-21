@@ -138,6 +138,12 @@ private:
   // Radar measurement noise standard deviation radius change in m/s
   double std_radrd_ ;
 
+  // Lidar measurement noise matrix R_lidar
+  Eigen::MatrixXd R_lidar_;
+
+  // Radar measuement noise matrix R_radar
+  Eigen::MatrixXd R_radar_;
+
   // Weights of sigma points
   Eigen::VectorXd weights_;
 
