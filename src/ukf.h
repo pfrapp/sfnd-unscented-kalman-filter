@@ -144,6 +144,9 @@ private:
   // Radar measuement noise matrix R_radar
   Eigen::MatrixXd R_radar_;
 
+  // Lidar measurement matrix H_lidar
+  Eigen::MatrixXd H_lidar_;
+
   // Weights of sigma points
   Eigen::VectorXd weights_;
 

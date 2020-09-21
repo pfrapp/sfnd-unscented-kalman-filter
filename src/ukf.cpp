@@ -95,11 +95,18 @@ UKF::UKF(std::string name) {
   computeWeights();
 
   // Initialize the measurement noise matrices.
+  R_lidar_ = MatrixXd(n_z_lidar_, n_z_lidar_);
+  R_radar_ = MatrixXd(n_z_radar_, n_z_radar_);
   R_lidar_ << (std_laspx_*std_laspx_), 0,
               0, (std_laspy_*std_laspy_);
   R_radar_ << (std_radr_*std_radr_), 0, 0,
               0, (std_radphi_*std_radphi_), 0,
               0, 0, (std_radrd_*std_radrd_);
+
+  // Initialize the lidar measurement matrix
+  H_lidar_ = MatrixXd(n_z_lidar_, n_x_);
+  H_lidar_ << 1, 0, 0, 0, 0,
+              0, 1, 0, 0, 0;
 
   //-------------- Debug stuff ------------
   name_ = name;
@@ -230,6 +237,31 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
    * covariance, P_.
    * You can also calculate the lidar NIS, if desired.
    */
+
+  //
+  // See Lesson 03 (EKF), Concept 13
+  //
+
+  // Predicted (aka expected) measurement.
+  VectorXd z_pred = H_lidar_ * x_;
+
+  // Actual measurement.
+  VectorXd z = VectorXd(n_z_lidar_);
+  z(0) = meas_package.raw_measurements_(0);
+  z(1) = meas_package.raw_measurements_(1);
+
+  // Innovation (no need to normalize any angle, as we only have position data here).
+  VectorXd y = z - z_pred;
+  MatrixXd Ht = H_lidar_.transpose();
+  MatrixXd S = H_lidar_ * P_ * Ht + R_lidar_;
+  MatrixXd Si = S.inverse();
+  MatrixXd PHt = P_ * Ht;
+  MatrixXd K = PHt * Si;
+
+  //new estimate
+  x_ = x_ + (K * y);
+  MatrixXd I = MatrixXd::Identity(n_x_, n_x_);
+  P_ = (I - K * H_lidar_) * P_;
 }
 
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
