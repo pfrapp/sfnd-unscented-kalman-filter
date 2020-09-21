@@ -280,6 +280,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   //new estimate
   x_ = x_ + (K * y);
+  x_(3) = normalizeAngle(x_(3));
   MatrixXd I = MatrixXd::Identity(n_x_, n_x_);
   P_ = (I - K * H_lidar_) * P_;
 }
@@ -392,6 +393,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   VectorXd z_diff = z - z_pred;
   z_diff(1) = normalizeAngle(z_diff(1));
   x_ += K*z_diff;
+  x_(3) = normalizeAngle(x_(3));
   P_ -= K*S*Kt;
 
 }
