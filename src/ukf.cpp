@@ -37,13 +37,19 @@ UKF::UKF(std::string name) {
   x_ = VectorXd(n_x_);
   x_.fill(0.0);
 
-  // initial covariance matrix
+  // Initial covariance matrix:
+  // As we only initialize the position, we set
+  // the variances for the speed, yaw angle, and yaw rate
+  // to relatively high values:
+  // - Speed: 5 m/s (18 kph) standard deviation
+  // - Yaw angle: 180 deg (pi radians) standard deviation
+  // - Yaw rate: 12 deg/s (0.2 rad/s) standard deviation
   P_ = MatrixXd(n_x_, n_x_);
-  P_ << 4, 0, 0, 0, 0,
-        0, 4, 0, 0, 0,
-        0, 0, 1, 0, 0,
-        0, 0, 0, 1, 0,
-        0, 0, 0, 0, 1;
+  P_ << 4, 0, 0,  0,  0,
+        0, 4, 0,  0,  0,
+        0, 0, 25, 0,  0,
+        0, 0, 0,  10, 0,
+        0, 0, 0,  0,  0.04;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 30;
