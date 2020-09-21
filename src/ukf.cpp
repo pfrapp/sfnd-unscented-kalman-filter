@@ -137,7 +137,20 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     // it is the radial relative velocity, but not the speed which is contained in the state.
     // It could even be the case that a car is moving tangentially with a high speed,
     // and Radar measures a range rate of (approximately) 0.
+    switch (meas_package.sensor_type_) {
+      case MeasurementPackage::LASER:
+        x_(0) = meas_package.raw_measurements_(0);  // x-position
+        x_(1) = meas_package.raw_measurements_(1);  // y-position
+        break;
+      case MeasurementPackage::RADAR:
+        double range = meas_package.raw_measurements_(0);
+        double azimuth = meas_package.raw_measurements_(1);
+        x_(0) = range*std::cos(azimuth);    // x-position
+        x_(1) = range*std::sin(azimuth);    // y-position
+        break;
+    }
 
+    *out_file_ << "* Position initialized to (" << getXPosition() << ", " << getYPosition() << ")\n";
     is_initialized_ = true;
     return;
   } else {
