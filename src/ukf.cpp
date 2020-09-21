@@ -194,9 +194,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     switch(meas_package.sensor_type_) {
         case MeasurementPackage::LASER:
           *out_file_ << "* Updating LASER\n";
+          UpdateLidar(meas_package);
           break;
         case MeasurementPackage::RADAR:
           *out_file_ << "* Updating RADAR\n";
+          UpdateRadar(meas_package);
           break;
       }
   }
@@ -238,6 +240,12 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
    * You can also calculate the lidar NIS, if desired.
    */
 
+  // Check input sensor modality.
+  if (meas_package.sensor_type_ != MeasurementPackage::LASER) {
+    std::cerr << "Error in UpdateLidar(...): Invalid sensor type\n";
+    return;
+  }
+
   //
   // See Lesson 03 (EKF), Concept 13
   //
@@ -271,6 +279,12 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    * covariance, P_.
    * You can also calculate the radar NIS, if desired.
    */
+
+  // Check input sensor modality.
+  if (meas_package.sensor_type_ != MeasurementPackage::RADAR) {
+    std::cerr << "Error in UpdateRadar(...): Invalid sensor type\n";
+    return;
+  }
 
   //
   // See Lesson 04, Concept 26.
