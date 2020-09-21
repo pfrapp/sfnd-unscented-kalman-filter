@@ -130,10 +130,16 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
   switch(meas_package.sensor_type_) {
     case MeasurementPackage::LASER:
-      *out_file_ << "* LASER at t = " << meas_package.timestamp_ << "\n";
+      *out_file_ << "\n* LASER at t = " << meas_package.timestamp_ << "\n";
+      *out_file_ << "* Measured Cartesian position: (" << meas_package.raw_measurements_(0) << ", " <<
+        meas_package.raw_measurements_(1) << ")\n";
       break;
     case MeasurementPackage::RADAR:
-      *out_file_ << "* RADAR at t = " << meas_package.timestamp_ << "\n";
+      *out_file_ << "\n* RADAR at t = " << meas_package.timestamp_ << "\n";
+      double range = meas_package.raw_measurements_(0);
+      double azimuth = meas_package.raw_measurements_(1);
+      *out_file_ << "* Measured Cartesian position: (" << range*std::cos(azimuth) << ", " <<
+        range*std::sin(azimuth) << ")\n";
       break;
   }
 
