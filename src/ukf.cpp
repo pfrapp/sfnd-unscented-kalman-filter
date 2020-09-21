@@ -239,6 +239,103 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    * covariance, P_.
    * You can also calculate the radar NIS, if desired.
    */
+
+  //
+  // See Lesson 04, Concept 26.
+  //
+
+  // Create a matrix of sigma points in the measurement space
+  MatrixXd Zsig = MatrixXd(n_z_radar_, 2*n_aug_ + 1);
+  Zsig.fill(0.0);
+
+  // Mean predicted measurement
+  VectorXd z_pred = VectorXd(n_z_radar_);
+  z_pred.fill(0.0);
+
+  // Measurement covariance matrix S
+  MatrixXd S = MatrixXd(n_z_radar_, n_z_radar_);
+  S.fill(0.0);
+
+  // Check dimensions.
+  if (Xsig_pred_.cols() != 2*n_aug_ + 1) {
+    std::cerr << "Xsig_pred_ has invalid number of columns\n";
+    return;
+  }
+
+  // Transform the sigma points into the Radar measurement space.
+  for (int ii=0; ii<Xsig_pred_.cols(); ii++) {
+    double px = Xsig_pred_(0, ii);
+    double py = Xsig_pred_(1, ii);
+    double v = Xsig_pred_(2, ii);
+    double psi = Xsig_pred_(3, ii);
+    double psi_dot = Xsig_pred_(4, ii);
+
+    // Apply the radar measurement equation
+    double rho = std::sqrt(px*px + py*py);
+    double phi = std::atan2(py, px);
+    double rho_dot = v * (px*std::cos(psi) + py*std::sin(psi)) / rho;
+
+    Zsig(0, ii) = rho;
+    Zsig(1, ii) = phi;
+    Zsig(2, ii) = rho_dot;
+  }
+
+  // Calculate the mean predicted (or actually expected) measurement.
+  for (int ii=0; ii<Zsig.cols(); ii++) {
+    z_pred += Zsig.col(ii) * weights_(ii);
+  }
+
+  // Calculate the innovation covariance matrix S.
+  //    Part 1: Uncertainty in the state space, 'projected' (by means of sigma
+  //    points) into the measurement space.
+  for (int ii=0; ii<Zsig.cols(); ii++) {
+    MatrixXd z_deviation = Zsig.col(ii) - z_pred;
+    // Normalize the angle
+    z_deviation(1) = normalizeAngle(z_deviation(1));
+    MatrixXd z_deviation_transpose = z_deviation.transpose();
+    MatrixXd tmp = z_deviation * z_deviation_transpose;
+    S += tmp * weights_(ii);
+  }
+  //    Part 2: Additional uncertainty from the actual measurement process.
+  S += R_radar_;
+
+  //
+  // See Lesson 04, Concept 29.
+  //
+
+  // Calculate the cross correlation matrix.
+  MatrixXd Tc = MatrixXd(n_x_, n_z_radar_);
+  Tc.fill(0.0);
+  for (int ii=0; ii<2*n_aug_ + 1; ii++) {
+    MatrixXd x_deviation = Xsig_pred_.col(ii) - x_;
+    // Normalize angle
+    x_deviation(3) = normalizeAngle(x_deviation(3));
+    MatrixXd z_deviation = Zsig.col(ii) - z_pred;
+    // Normalize angle
+    z_deviation(1) = normalizeAngle(z_deviation(1));
+    MatrixXd z_deviation_transpose = z_deviation.transpose();
+    Tc += (x_deviation * z_deviation_transpose) * weights_(ii);
+  }
+
+  // Calculate the Kalman gain K.
+  MatrixXd K = Tc * S.inverse();
+  MatrixXd Kt = K.transpose();
+
+  // Create a vector to hold the actual measurement.
+  VectorXd z = VectorXd(n_z_radar_);
+  double range = meas_package.raw_measurements_(0);
+  double azimuth = meas_package.raw_measurements_(1);
+  double range_rate = meas_package.raw_measurements_(2);
+  z(0) = range;
+  z(1) = azimuth;
+  z(2) = range_rate;
+
+  // Update the state mean x and the covariance matrix P.
+  VectorXd z_diff = z - z_pred;
+  z_diff(1) = normalizeAngle(z_diff(1));
+  x_ += K*z_diff;
+  P_ -= K*S*Kt;
+
 }
 
 void UKF::computeWeights() {
