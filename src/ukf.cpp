@@ -18,8 +18,23 @@ UKF::UKF(std::string name) {
   // if this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
 
+  // set state dimension
+  n_x_ = 5;
+
+  // set augmented dimension
+  n_aug_ = 7;
+
+  // define spreading parameter
+  lambda_ = 3.0 - n_aug_;
+
+  // set measurement dimension:
+  // lidar can measure px and py,
+  // radar can measure r, phi, and r_dot
+  n_z_lidar_ = 2;
+  n_z_radar_ = 3;
+
   // initial state vector
-  x_ = VectorXd(5);
+  x_ = VectorXd(n_x_);
   x_.fill(0.0);
 
   // initial covariance matrix
@@ -68,21 +83,6 @@ UKF::UKF(std::string name) {
   is_initialized_ = false;
 
   time_us_ = 0;
-
-  // set state dimension
-  n_x_ = 5;
-
-  // set augmented dimension
-  n_aug_ = 7;
-
-  // define spreading parameter
-  lambda_ = 3.0 - n_aug_;
-
-  // set measurement dimension:
-  // lidar can measure px and py,
-  // radar can measure r, phi, and r_dot
-  n_z_lidar_ = 2;
-  n_z_radar_ = 3;
 
   Xsig_pred_ = Eigen::MatrixXd(n_x_, 2*n_aug_ + 1);
   Xsig_pred_.fill(0.0);
