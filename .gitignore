@@ -1,2 +1,6 @@
 /build
 /.vscode
+
+# LaTeX files
+*.log
+*.aux
